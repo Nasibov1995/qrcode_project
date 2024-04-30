@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QR Code Scanner</title>
+    <!-- Include any necessary scripts or stylesheets -->
+</head>
+<body>
+    <h1>Scan QR Code</h1>
+    <form id="scan-form" method="POST" action="{% url 'scan_qr_code' %}">
+        {% csrf_token %}
+        <input type="hidden" id="scanned_url" name="scanned_url">
+        <button type="submit" style="display: none;"></button>
+    </form>
+
+    <!-- Include the necessary library for QR code scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.0/dist/jsQR.js"></script>
+    <script>
+        // Get video stream and start scanning for QR codes
+        navigator.mediaDevices.getUserMedia({  video: {
+            facingMode: "environment",
+            width: { min: 1280, ideal: 1920, max: 2560 },
+            height: { min: 720, ideal: 1080, max: 1440 },
+            frameRate: { ideal: 30 }
+        } })
+            .then(function(stream) {
+                var video = document.createElement("video");
+                video.srcObject = stream;
+                video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+                video.style.width = "100%";
+                document.body.appendChild(video);
+                video.play();
+
+                // Function to send scanned URL to the Django backend
+                function sendScannedUrl(url) {
+                    document.getElementById("scanned_url").value = url;
+                    document.getElementById("scan-form").submit();
+                }
+
+                // Canvas context for drawing QR codes
+                var canvas = document.createElement("canvas");
+                canvas.style.display = "none";
+                document.body.appendChild(canvas);
+                var context = canvas.getContext("2d");
+
+                // Function to scan for QR codes
+                function tick() {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        var code = jsQR(imageData.data, imageData.width, imageData.height, {
+                            inversionAttempts: "dontInvert",
+                        });
+
+                        if (code) {
+                            // Stop scanning
+                            clearInterval(scanInterval);
+                            // Send the scanned URL to the Django backend
+                            sendScannedUrl(code.data);
+                        }
+                    }
+                }
+
+                // Start scanning
+                var scanInterval = setInterval(tick, 100);
+            })
+            .catch(function(err) {
+                console.error("Error accessing camera.", err);
+            });
+    </script>
+</body>
+</html>
