@@ -4,6 +4,24 @@ from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 import urllib.request
 import os
+import base64
+from PIL import Image
+from io import BytesIO
+
+# Base64 encoded string representing the image
+base64_string = "/9j/4AAQSkZJRgABAQAAAQABAAD/"  # Your Base64 string here
+
+# Decode the Base64 string
+image_data = base64.b64decode(base64_string)
+
+# Create a PIL Image object from the decoded image data
+image = Image.open(BytesIO(image_data))
+
+# Save the image as a JPEG file
+image.save("image.jpg")
+
+# Optional: Display the image
+image.show()
 
 
 class Item(models.Model):
