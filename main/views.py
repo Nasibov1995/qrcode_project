@@ -1,4 +1,3 @@
-# qrcode_scanner/views.py
 
 from django.shortcuts import render,redirect
 from django.http import JsonResponse
@@ -23,6 +22,8 @@ from selenium.webdriver.chrome.service import Service
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
+import urllib.request
+
 
 
 
@@ -56,61 +57,17 @@ def scan_qr_code(request):
 
         image = driver.find_element(By.XPATH,'//*[@id="app-content-id"]/div/div[1]/div[2]/div/img').get_attribute('src')
         
+        Item.objects.create(image_url=image).save()
+      
+        time.sleep(4)
         
-        
-        # with open('baza.txt','a') as file:
-        #     file.write(image)
-
-        
-        time.sleep(4) 
-        response = requests.get(image)
-        image_data = response.content
-
-        # Generate a PDF
-        pdf_buffer = HttpResponse(content_type='application/pdf')
-        pdf_buffer['Content-Disposition'] = f'attachment; filename="image_to_pdf.pdf"'
-
-        c = canvas.Canvas(pdf_buffer, pagesize=letter)
-        c.drawImage(image_data, inch, inch, width=400, height=300)
-        c.save()
-            
-        
-        
-        # image_filename = download_image_from_url(image)
-
-        # media_directory = settings.MEDIA_ROOT
-        # shutil.move(image_filename, os.path.join(media_directory, 'downloaded_image.jpg'))
-        
-        # response = requests.get(image)
-        # if response.status_code == 200:
-        #     image_content = BytesIO(response.content)
-        #     img = Image.open(image_content)
-        #     my_model = Item()
-        #     my_model.image_file.save('image.jpg', img)
-        #     my_model.save()
-        
-        
-        
-        
+    
 
     except:NoSuchElementException,AttributeError,NoSuchWindowException,WebDriverException
 
     return render(request, 'qrcode_scanner/scan.html')
 
 
-def download_image_from_url(image_url):
-    # Download the image using requests or any other method
-    # Here, we'll assume the image is downloaded using requests
-    # You may need to adjust this part based on your specific requirements
-    import requests
-    image_response = requests.get(image_url)
-    if image_response.status_code == 200:
-        image_filename = 'downloaded_image.jpg'
-        with open(image_filename, 'wb') as f:
-            f.write(image_response.content)
-        return image_filename
-    else:
-        raise Exception("Failed to download image.")
 
 
    

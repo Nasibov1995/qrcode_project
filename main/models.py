@@ -8,11 +8,11 @@ import os
 
 class Item(models.Model):
     image_file = models.ImageField(upload_to='images',blank=True)
-    image_url = models.URLField(null=True)
+    image_url = models.URLField(null=True,max_length=5000000)
 
     
     
-    def cache(self):
+    def save(self, *args, **kwargs):
         """Store image locally if we have a URL"""
 
         if self.image_url and not self.image_file:
@@ -21,14 +21,6 @@ class Item(models.Model):
                     os.path.basename(self.image_url),
                     File(open(result[0], 'rb'))
                     )
-            self.save()
+        super().save(*args, **kwargs)
 
-    # def get_image_from_url(self, url):
-    #     img_tmp = NamedTemporaryFile(delete=True)
-    #     with urlopen(url) as uo:
-    #         assert uo.status == 200
-    #         img_tmp.write(uo.read())
-    #         img_tmp.flush()
-    #     img = File(img_tmp)
-    #     self.image_file.save(img_tmp.name, img)
-    #     self.image_url = url
+
