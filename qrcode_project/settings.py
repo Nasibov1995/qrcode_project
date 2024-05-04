@@ -38,8 +38,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "main.apps.MainConfig",
-    "qr_code"
+    "qr_code",
+    'ckeditor'
 ]
+
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

@@ -1,44 +1,25 @@
 from django.db import models
-from urllib.request import urlopen
-from django.core.files import File
-from django.core.files.temp import NamedTemporaryFile
-import urllib.request
-import os
 import base64
-from PIL import Image
-from io import BytesIO
-
-# Base64 encoded string representing the image
-base64_string = "/9j/4AAQSkZJRgABAQAAAQABAAD/"  # Your Base64 string here
-
-# Decode the Base64 string
-image_data = base64.b64decode(base64_string)
-
-# Create a PIL Image object from the decoded image data
-image = Image.open(BytesIO(image_data))
-
-# Save the image as a JPEG file
-image.save("image.jpg")
-
-# Optional: Display the image
-image.show()
-
+from ckeditor.fields import RichTextField
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.core.files.base import ContentFile
 
 class Item(models.Model):
     image_file = models.ImageField(upload_to='images',blank=True)
-    image_url = models.URLField(null=True,max_length=5000000)
-
+    image_url = RichTextField()
     
     
-    def save(self, *args, **kwargs):
-        """Store image locally if we have a URL"""
+@receiver(post_save, sender=Item)
+def save_image_from_base64(sender, instance, created, **kwargs):
+    if created and instance.image_url:
+        # Decode base64 string
+        base64_string = instance.image_url.split(",")[1]  # Assuming base64 string has a prefix like "data:image/jpeg;base64,"
+        image_data = base64.b64decode(base64_string)
 
-        if self.image_url and not self.image_file:
-            result = urllib.request.urlretrieve(self.image_url)
-            self.image_file.save(
-                    os.path.basename(self.image_url),
-                    File(open(result[0], 'rb'))
-                    )
-        super().save(*args, **kwargs)
+        # Save the image to the image_file field
+        filename = "image.jpg"  # Or any other desired filename
+        instance.image_file.save(filename, ContentFile(image_data), save=False)
+        instance.save()
 
 
