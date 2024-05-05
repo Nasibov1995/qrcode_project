@@ -18,3 +18,8 @@ def save_image_from_base64(sender, instance, created, **kwargs):
         instance.save()
         
         return "Signals Worked"
+
+
+
+
+

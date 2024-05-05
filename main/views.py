@@ -49,7 +49,7 @@ def scan_qr_code(request):
 
         driver.maximize_window()
         
-        time.sleep(3)
+        time.sleep(2)
 
         # download_image = driver.find_element(By.XPATH,"//*[@id='app-content-id']/div/div[1]/div[2]/button")
 
@@ -58,9 +58,9 @@ def scan_qr_code(request):
         image = driver.find_element(By.XPATH,'//*[@id="app-content-id"]/div/div[1]/div[2]/div/img').get_attribute('src')
         
         
+        
         Item(image_url=image).save()
       
-
         
     
 
