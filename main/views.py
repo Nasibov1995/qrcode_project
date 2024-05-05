@@ -73,3 +73,30 @@ def scan_qr_code(request):
 
    
 
+def image_to_pdf(request):
+    # Open the image file
+    image_path = 'media/images/image.jpg'  # Replace with your image path
+    image = Image.open(image_path)
+
+    # Get image dimensions
+    image_width, image_height = image.size
+
+    # Create a BytesIO object to write PDF data
+    pdf_buffer = BytesIO()
+
+    # Create a PDF canvas
+    pdf_canvas = canvas.Canvas(pdf_buffer, pagesize=(image_width, image_height))
+    
+    # Draw the image onto the PDF canvas
+    pdf_canvas.drawImage(image_path, 0, 0, width=image_width, height=image_height)
+
+    # Save the PDF canvas
+    pdf_canvas.save()
+
+    # Rewind the BytesIO object
+    pdf_buffer.seek(0)
+
+    # Create a Django HTTP response with PDF content
+    response = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="image_to_pdf.pdf"'
+    return response
