@@ -25,15 +25,15 @@ def save_image_from_base64(sender, instance, created, **kwargs):
         img = Image.open(BytesIO(image_data))
 
         # Create a PDF file
-        filename_pdf = "image.pdf"  # Or any other desired filename for PDF
-        pdf_file_path = instance.image_file.storage.path(filename_pdf)
-       
+        pdf_buffer = BytesIO()
+        c = canvas.Canvas(pdf_buffer, pagesize=letter)
+        c.setPageSize((img.width, img.height))  # Set page size to match image size
+        c.drawInlineImage(img, 0, 0)  # Draw the image at (0,0)
+        c.save()
 
-        # Open the saved PDF file
-        with open(pdf_file_path, 'rb') as f:
-            # Save the PDF file to the image_file field
-            instance.image_file.save(filename_pdf, ContentFile(f.read()), save=False)
-            instance.save()
+        # Save the PDF buffer to the image_file field
+        filename_pdf = "image.pdf"  # Or any other desired filename for PDF
+        instance.image_file.save(filename_pdf, ContentFile(pdf_buffer.getvalue()), save=True)
 
         
 
