@@ -1,0 +1,9 @@
+Django
+Pillow
+Selenium
+reportlab
+django-ckeditor
+python-dotenv
+django-qr-code
+pdf2image
+pytesseract

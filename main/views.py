@@ -1,30 +1,11 @@
 from django.shortcuts import render,redirect
-from django.http import JsonResponse
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import WebDriverException,NoSuchElementException,NoSuchWindowException
-import requests
-from django.http import HttpResponse
-from django.core.files.base import ContentFile
-from PIL import Image
-from io import BytesIO
 from . models import Item
-import os
-import shutil
 import time
-from django.conf import settings
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
-import urllib.request
-
-
-
+from pdf2image import convert_from_path
+import pytesseract
 
 def scan_qr_code(request):
     if request.method == 'POST':
@@ -51,19 +32,48 @@ def scan_qr_code(request):
 
         # Click the button if need
         # download_image = driver.find_element(By.XPATH,"//*[@id='app-content-id']/div/div[1]/div[2]/button")
-
         # download_image.click()
 
         image = driver.find_element(By.XPATH,'//*[@id="app-content-id"]/div/div[1]/div[2]/div/img').get_attribute('src')
-        
-        
+          
         
         Item(image_url=image).save()
       
-        
-    
 
     except:NoSuchElementException,AttributeError,NoSuchWindowException,WebDriverException
 
     return render(request, 'qrcode_scanner/scan.html')
 
+
+
+
+
+
+pytesseract.pytesseract.tesseract_cmd = r'D:\PyTesseract\tesseract.exe'
+
+# Path to your PDF file
+pdf_path = 'media/qr_code_files/image.pdf'
+
+# Convert PDF to list of images
+images = convert_from_path(pdf_path)
+
+# Initialize an empty list to store words
+words = []
+
+x = ['COREK']
+# Iterate through each image (page) and perform OCR
+for image in images:
+    # Perform OCR on the image
+    text = pytesseract.image_to_string(image)
+
+    # Split the text into words and add them to the list of words
+    page_words = text.split()
+    
+    
+    
+    common_elements =  [ common for common in x if common in page_words]
+    words.extend(common_elements)
+
+# Print the extracted words
+for word in words:
+    print(word)
